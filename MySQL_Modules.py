@@ -1,4 +1,4 @@
-from blog_init import db
+from mvknow_init import db
 class article(db.Model):
     __tablename__='article'
     id=db.Column(db.Integer,primary_key=True)
@@ -9,4 +9,3 @@ class article(db.Model):
     read_num=db.Column(db.Integer)
     def __repr__(self):
         return '<article %r>' % self.title
-db.create_all()

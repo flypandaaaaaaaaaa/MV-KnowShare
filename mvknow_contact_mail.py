@@ -1,6 +1,6 @@
 from flask_mail import Mail,Message
 from flask import render_template
-from blog_init import app
+from mvknow_init import app
 from threading import Thread
 
 app.config['MAIL_SERVER'] = 'smtp.qq.com'

@@ -6,10 +6,10 @@ from flask_ckeditor import CKEditor
 import os
 app = Flask(__name__)
 
-app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://blog:passwd@11.11.11.11:3306/blog'
+app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://mvknow:123456@172.16.8.16:3306/mvknow'
 app.config['SQLALCHEMY_COMMIT_ON_TEARDOWN'] = True
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-app.config['SECRET_KEY']='DADSSADSA'
+app.config['SECRET_KEY']='ssxax'
 
 app.config['CKEDITOR_SERVE_LOCAL'] = True
 app.config['CKEDITOR_HEIGHT'] = 400

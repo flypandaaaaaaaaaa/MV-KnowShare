@@ -3,8 +3,8 @@ from flask_wtf import FlaskForm
 from wtforms import StringField,TextAreaField,SubmitField
 from wtforms.validators import DataRequired
 from MySQL_Modules import article
-from blog_init import db,app,ckeditor
-from blog_contact_mail import send_mail
+from mvknow_init import db,app,ckeditor
+from mvknow_contact_mail import send_mail
 from flask_ckeditor import  CKEditorField
 import time
 
@@ -94,4 +94,4 @@ def upload():
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=80)
+    app.run(host='0.0.0.0',port=8080)
