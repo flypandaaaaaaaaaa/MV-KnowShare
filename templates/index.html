@@ -73,24 +73,15 @@
 								<h1 class="entry-title">
 									<a href="readall/{{ art.id }}">{{ art.title }}</a>
 								</h1>
-								<div class="entry-meta">
-			
-									<span class="post-date"><a href="#"><time class="entry-date" datetime="2012-11-09T23:15:57+00:00">{{ art.created_date }}</time></a></span>
-			
-									<span class="post-author"><a href="#">{{ art.author }}</a></span>
-
-								</div>
 							</header>
-							<div class="entry-content clearfix">
-								<p>{{ art.body }} </p>
-								<div class="read-more cl-effect-14">
-									<a href="readall/{{ art.id }}" class="more-link">继续阅读<span class="meta-nav">→</span></a>
-								</div>
-							</div>
 						</article>
 						
 						{% endfor %}
-						
+
+                        <div class="read-more cl-effect-14">
+                                <a href="/page/{{ lastpage }}" class="more-link"><span class="meta-nav">←</span>上一页</a><a href="/page/{{ nextpage }}" class="more-link">下一页<span class="meta-nav">→</span></a>
+                            </div>
+
 					</main>
 					<aside class="col-md-4">
 						<div class="widget widget-recent-posts">		
@@ -138,7 +129,7 @@
 			<div class="container">
 				<div class="row">
 					<div class="col-md-12">
-						<p class="copyright">IT分享平台<a href="/" target="_blank" title="blog"> IT分享平台</a></p>
+						<p class="copyright"><a href="/" target="_blank" title="blog"> IT分享平台</a></p>
 					</div>
 				</div>
 			</div>

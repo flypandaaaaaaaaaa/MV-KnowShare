@@ -1,52 +1,93 @@
-from flask import render_template,request,make_response,url_for,send_from_directory,Markup
+from flask import render_template,request,url_for,send_from_directory,redirect
 from flask_wtf import FlaskForm
-from wtforms import StringField,TextAreaField,SubmitField
-from wtforms.validators import DataRequired
-from MySQL_Modules import article
-from mvknow_init import db,app,ckeditor
+from wtforms import StringField,TextAreaField,SubmitField,PasswordField
+from wtforms.validators import DataRequired,Email
+from MySQL_Modules import article,del_article,user
+from mvknow_init import db,app,ckeditor,login_manager
 from mvknow_contact_mail import send_mail
 from flask_ckeditor import  CKEditorField
-import time
+from flask_login import login_required,login_user,logout_user
+import time,os,hashlib
 
-import datetime,os,random,json,re,urllib
+def GetNowTime():
+    return time.strftime("%Y-%m-%d",time.localtime(time.time()))
 
-
+def GetIDList(page,perpage):
+    Article_list = article.query.order_by(article.id.desc())
+    IDList=[]
+    for i in Article_list:
+        IDList.append(i.id)
+    return IDList[perpage*page-perpage:perpage*page]
 class mail_form(FlaskForm):
     subject=StringField('subject',validators=[DataRequired()])
     message=TextAreaField('message',validators=[DataRequired()])
     submit=SubmitField('Submit')
 
+class PostForm(FlaskForm):
+	title = StringField('Title',validators=[DataRequired()])
+	abstract = StringField('abstract',validators=[DataRequired()])
+	body = CKEditorField('Body', validators=[DataRequired()])
+	submit = SubmitField('提交')
 
-@app.route('/',methods=['GET','POST'])
+class LoginForm(FlaskForm):
+	username = StringField('用户名',validators=[DataRequired('请输入用户名')])
+	password = PasswordField('密码',validators=[DataRequired('请输入密码')])
+	submit = SubmitField('登陆')
+
+class AdminInfoForm(FlaskForm):
+    username = StringField('用户名',validators=[DataRequired('请输入用户名')])
+    password = PasswordField('密码',validators=[DataRequired('请输入密码')])
+    mail=StringField('邮箱',validators=[DataRequired('请输入邮箱地址'),Email('邮箱地址不正确')])
+    submit = SubmitField('录入信息')
+
+@app.route('/',methods=['GET'])
 def Home():
-    Article_list = article.query.all()
+    FirstPageID=GetIDList(1,7)
+    Article_list = article.query.filter(article.id.in_ (FirstPageID)).order_by(article.id.desc())
     Article_list_recent = article.query.order_by(article.created_date.desc()).limit(5).offset(0)
     Article_list_most = article.query.order_by(article.read_num.desc()).limit(5).offset(0)
-    return render_template('index.html',Article_list=Article_list,Article_list_recent=Article_list_recent,Article_list_most=Article_list_most)
+    return render_template('index.html',Article_list=Article_list,Article_list_recent=Article_list_recent,Article_list_most=Article_list_most,lastpage='#',nextpage='2')
 
-@app.route('/readall',methods=['GET','POST'])
+@app.route('/page/<page>',methods=['GET'])
+def page(page):
+    PageID = GetIDList(int(page),7)
+    Article_list = article.query.filter(article.id.in_(PageID)).order_by(article.id.desc())
+    Article_list_recent = article.query.order_by(article.created_date.desc()).limit(5).offset(0)
+    Article_list_most = article.query.order_by(article.read_num.desc()).limit(5).offset(0)
+    if int(page) <= 1:
+        lastpage='#'
+        nextpage=2
+    else:
+        lastpage=int(page)-1
+        nextpage=int(page)+1
+    return render_template('index.html',Article_list=Article_list,Article_list_recent=Article_list_recent,Article_list_most=Article_list_most,lastpage=lastpage,nextpage=nextpage)
+
+@app.route('/readall',methods=['GET'])
 def readall():
-    Article_list = article.query.order_by(article.created_date.desc())
-    return render_template('full-width.html',Article_list=Article_list)
+    PageID = GetIDList(1,5)
+    Article_list = article.query.filter(article.id.in_(PageID)).order_by(article.id.desc())
+    return render_template('full-width.html',Article_list=Article_list,lastpage='#',nextpage='2')
 
-# @app.route('/readall/<art_number>',methods=['GET','POST'])
-# def readone(art_number):
-#     Article= article.query.filter_by(id=art_number).first()
-#     Article.read_num=Article.read_num+1
-#     db.session.commit()
-#     Article_list_recent = article.query.order_by(article.created_date.desc()).limit(5).offset(0)
-#     Article_list_most = article.query.order_by(article.read_num.desc()).limit(5).offset(0)
-#     return render_template('single.html_old', Article=Article, Article_list_recent=Article_list_recent, Article_list_most=Article_list_most)
-@app.route('/readall/<art_number>',methods=['GET','POST'])
+@app.route('/readallpage/<page>',methods=['GET'])
+def readallpage(page):
+    PageID = GetIDList(int(page),5)
+    Article_list = article.query.filter(article.id.in_(PageID)).order_by(article.id.desc())
+    if int(page) <= 1:
+        lastpage='#'
+        nextpage=2
+    else:
+        lastpage=int(page)-1
+        nextpage=int(page)+1
+    return render_template('full-width.html',Article_list=Article_list,lastpage=lastpage,nextpage=nextpage)
+
+@app.route('/readall/<art_number>',methods=['GET'])
 def readone(art_number):
     Article= article.query.filter_by(id=art_number).first()
     Article.read_num=Article.read_num+1
     db.session.commit()
     return render_template('single.html', Article=Article)
 
-
-
-@app.route('/about',methods=['GET','POST'])
+@app.route('/about',methods=['GET'])
 def about():
     return render_template('about.html')
 
@@ -56,27 +97,79 @@ def contact():
         send_mail(request.form.get('subject'), 'mail/contact', context=request.form.get('message'))
     return render_template('contact.html')
 
-
-
-class PostForm(FlaskForm):
-	title = StringField('Title',validators=[DataRequired()])
-	body = CKEditorField('Body', validators=[DataRequired()])
-	submit = SubmitField()
-def GetNowTime():
-    return time.strftime("%Y-%m-%d",time.localtime(time.time()))
-
-@app.route('/editor', methods=['GET', 'POST'])
-def index():
+@app.route('/newarticle', methods=['GET', 'POST'])
+@login_required
+def newarticle():
     form = PostForm()
     if form.validate_on_submit():
         title = form.title.data
         body = form.body.data
-        new_article=article(title=title,body=body,created_date=GetNowTime(),author='fangjianqi',read_num=0)
+        abstract=form.abstract.data
+        new_article=article(title=title,body=body,created_date=GetNowTime(),author='IT',read_num=0,abstract=abstract)
         db.session.add(new_article)
         db.session.commit()
         return render_template('post.html',title=title,body=body)
     return render_template('editor.html', form=form)
 
+@app.route('/edit/<art_number>', methods=['GET', 'POST'])
+@login_required
+def edit(art_number):
+    form=PostForm()
+    Article= article.query.filter_by(id=art_number).first()
+    Del_Article = del_article.query.filter_by(id=art_number).first()
+    if Article is None:
+        Article_content=Del_Article
+    else:
+        Article_content=Article
+    if form.validate_on_submit():
+        Article_content.title=form.title.data
+        Article_content.abstract=form.abstract.data
+        Article_content.body=form.body.data
+        db.session.commit()
+        return render_template('post.html',title=form.title.data,body=form.body.data)
+    form.title.data=Article_content.title
+    form.abstract.data=Article_content.abstract
+    form.body.data=Article_content.body
+    return render_template('editor.html',form=form)
+
+@app.route('/manage', methods=['GET', 'POST'])
+@login_required
+def manage():
+    Article_list = article.query.order_by(article.created_date.desc())
+    del_Article_list = del_article.query.order_by(del_article.created_date.desc())
+    return render_template('manage.html',Article_list=Article_list,del_Article_list=del_Article_list)
+
+@app.route('/del/<art_number>', methods=['GET', 'POST'])
+@login_required
+def move_article(art_number):
+    Article= article.query.filter_by(id=art_number).first()
+    Del_article=del_article.query.filter_by(id=art_number).first()
+    if Del_article is None:
+        del_article_row = del_article(id=Article.id, title=Article.title, body=Article.body,
+                                      created_date=Article.created_date, author=Article.author,
+                                      read_num=Article.read_num, abstract=Article.abstract)
+        db.session.add(del_article_row)
+        db.session.delete(Article)
+        db.session.commit()
+        return redirect(url_for('manage'))
+    elif Del_article.id != 0:
+        return redirect(url_for('manage'))
+
+@app.route('/online/<art_number>', methods=['GET', 'POST'])
+@login_required
+def online_article(art_number):
+    Article= article.query.filter_by(id=art_number).first()
+    Del_article=del_article.query.filter_by(id=art_number).first()
+    if Article is None:
+        article_row = article(id=Del_article.id, title=Del_article.title, body=Del_article.body,
+                                      created_date=Del_article.created_date, author=Del_article.author,
+                                      read_num=Del_article.read_num, abstract=Del_article.abstract)
+        db.session.add(article_row)
+        db.session.delete(Del_article)
+        db.session.commit()
+        return redirect(url_for('manage'))
+    elif Del_article.id != 0:
+        return redirect(url_for('manage'))
 
 @app.route('/files/<filename>')
 def files(filename):
@@ -92,6 +185,57 @@ def upload():
 	url = url_for('files', filename=f.filename)
 	return url
 
+@app.route('/login' ,methods=['GET', 'POST'])
+def login():
+    MVLoginForm=LoginForm()
+    if MVLoginForm.validate_on_submit():
+        FormUserName=MVLoginForm.username.data
+        FormPassword=MVLoginForm.password.data
+        EncryptFormPassword = hashlib.md5(FormPassword.encode('utf-8')).hexdigest()
+        DBUserInfo = user.query.filter_by(name=FormUserName).first()
+        if DBUserInfo is None:
+            MVLoginForm.username.data='用户名不存在!'
+            return render_template('login.html',MVLoginForm=MVLoginForm)
+        elif EncryptFormPassword != DBUserInfo.password:
+            MVLoginForm.username.data='密码错误!'
+            return render_template('login.html',MVLoginForm=MVLoginForm)
+        elif EncryptFormPassword == DBUserInfo.password:
+            login_user(DBUserInfo)
+            return redirect(url_for('manage'))
+    return render_template('login.html',MVLoginForm=MVLoginForm)
+
+@login_manager.user_loader
+def user_loader(id):
+    Adminuser = user.query.filter_by(id=id).first()
+    return Adminuser
+
+@app.route('/logout/')
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('Home'))
+
+@app.route('/regadmin' ,methods=['GET', 'POST'])
+@login_required
+def regadmin():
+    MVAdminInfoForm=AdminInfoForm()
+    FormUsername=MVAdminInfoForm.username.data
+    FormPassword=MVAdminInfoForm.password.data
+    FormEmail=MVAdminInfoForm.mail.data
+    if request.method=='POST':
+        DBuserInfo = user.query.filter_by(name=FormUsername).first()
+        if DBuserInfo:
+            MVAdminInfoForm.username.data='用户已经存在，录入失败！'
+            return render_template('regadmin.html',MVAdminInfoForm=MVAdminInfoForm)
+        else:
+            EncryptFormPassword=hashlib.md5(FormPassword.encode('utf-8')).hexdigest()
+            UserInfoRow=user(name=FormUsername,password=EncryptFormPassword,email=FormEmail)
+            db.session.add(UserInfoRow)
+            db.session.commit()
+            return redirect(url_for('manage'))
+    else:
+        return render_template('regadmin.html', MVAdminInfoForm=MVAdminInfoForm)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0',port=8080)
+    app.run(host='0.0.0.0',port=80,threaded=True)
+

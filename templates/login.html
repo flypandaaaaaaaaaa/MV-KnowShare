@@ -1,0 +1,20 @@
+{% import "bootstrap/wtf.html" as wtf %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员登陆</title>
+    	<style>
+	form {
+	display:flex;
+	flex-irection: row;
+	justify-content: center
+}
+</style>
+</head>
+<body>
+
+{{ wtf.quick_form(MVLoginForm)}}
+
+</body>
+</html>

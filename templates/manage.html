@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>管理员页面</title>
+</head>
+<body>
+
+<li><a href="/newarticle">发布文章</a></li>
+<li><a href="/regadmin">注册用户</a></li>
+<li><a href="/logout">退出登陆</a></li>
+
+    <h1>在线文章列表</h1>
+
+{% for art in Article_list %}
+
+    <h1>
+
+        <a href="readall/{{ art.id }}">{{ art.title}}</a>  <a href="edit/{{ art.id }}">编辑</a>  <a href="del/{{ art.id }}">下线</a>
+
+    </h1>
+{% endfor %}
+
+    <h1>离线文章列表</h1>
+
+{% for del_art in del_Article_list %}
+
+    <h1>
+
+        <a href="readall/{{ del_art.id }}">{{ del_art.title}}</a>  <a href="edit/{{ del_art.id }}">编辑</a>  <a href="online/{{ del_art.id }}">上线</a>
+
+    </h1>
+{% endfor %}
+
+</body>
+</html>

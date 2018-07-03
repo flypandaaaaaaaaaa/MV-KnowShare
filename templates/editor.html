@@ -7,14 +7,14 @@
 </head>
 <body>
 	<div class="warpper" style="width: 700px; margin: auto">
-		<h1>Flask-CKEditor Demo: Image Upload</h1>
 		<form method="post">
 			{{ form.csrf_token }}
-			{{ form.title.label }}<br>
-			{{ form.title }}<br><br>
-			{{ form.body.label }}<br>
+            <p>题目</p>
+			{{ form.title }}
+            <p>文章摘要</p>
+			{{ form.abstract }}
+            <p>正文</p>
 			{{ form.body }}
-			<br>
 			{{ form.submit }}
 		</form>
 	</div>

@@ -80,7 +80,7 @@
                             </div>
                         </header>
                         <div class="entry-content clearfix">
-                            <p>{{ art.body}}</p>
+                            <p>{{ art.abstract}}</p>
                             <div class="read-more cl-effect-14">
                                 <a href="readall/{{ art.id }}" class="more-link">继续阅读<span class="meta-nav">→</span></a>
                             </div>
@@ -92,6 +92,10 @@
     </div>
 
 {% endfor %}
+
+<div class="read-more cl-effect-14">
+    <a href="/readallpage/{{ lastpage }}" class="more-link"><span class="meta-nav">←</span>上一页</a><a href="/readallpage/{{ nextpage }}" class="more-link">下一页<span class="meta-nav">→</span></a>
+</div>
 
 <footer id="site-footer">
     <div class="container">
