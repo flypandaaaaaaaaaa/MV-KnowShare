@@ -1,0 +1,15 @@
+DB_Connection='xxxxxxxxxxxxxxxxxxxx'
+DB_COMMIT_TEAR=True
+DB_TRACK=True
+FLASK_SECRET_KEY='xxxxxxxxxxxxxx'
+CKEDITOR_LOCAL=True
+CK_HEIGHT=400
+CKEDITOR_UPLOAD_PATH='upload'
+Mail_Sender_Server='smtp.qq.com'
+Mail_Sender_Port=25
+Mail_TLS=True
+Mail_SSL=False
+Mail_Sender_Username='xxxxxxxxxxxxxxxx'
+Mail_Sender_Password='xxxxxxxxxxxxxxxx'
+Mail_Subject='IT知识分享平台通知'
+Mail_Sender='IT知识分享平台 <xxxx@qq.com>'

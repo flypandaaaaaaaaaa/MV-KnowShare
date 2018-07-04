@@ -3,15 +3,15 @@ from flask import render_template
 from mvknow_init import app
 from threading import Thread
 from MySQL_Modules import user
-
-app.config['MAIL_SERVER'] = 'xxxxxxxxxxx'
-app.config['MAIL_PORT'] = 25
-app.config['MAIL_USE_TLS'] = True
-app.config['MAIL_USE_SSL'] = False
-app.config['MAIL_USERNAME'] = 'xxxxxxxxxxx@qq.com'
-app.config['MAIL_PASSWORD'] = 'xxxxxxxxxxxxx'
-app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = '[IT知识分享平台通知]'
-app.config['FLASKY_MAIL_SENDER'] = 'IT知识分享平台 <xxxxxxxx@qq.com>'
+from config import *
+app.config['MAIL_SERVER'] = Mail_Sender_Server
+app.config['MAIL_PORT'] = Mail_Sender_Port
+app.config['MAIL_USE_TLS'] = Mail_TLS
+app.config['MAIL_USE_SSL'] = Mail_SSL
+app.config['MAIL_USERNAME'] = Mail_Sender_Username
+app.config['MAIL_PASSWORD'] = Mail_Sender_Password
+app.config['FLASKY_MAIL_SUBJECT_PREFIX'] = Mail_Subject
+app.config['FLASKY_MAIL_SENDER'] = Mail_Sender
 mail=Mail(app)
 
 

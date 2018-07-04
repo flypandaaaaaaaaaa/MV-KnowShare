@@ -10,6 +10,7 @@ class article(db.Model):
     author=db.Column(db.String(100))
     read_num=db.Column(db.Integer)
     abstract=db.Column(db.String(1000))
+    read_limit = db.Column(db.Integer)
     def __repr__(self):
         return '<article %r>' % self.title
 
@@ -22,6 +23,7 @@ class del_article(db.Model):
     author = db.Column(db.String(100))
     read_num = db.Column(db.Integer)
     abstract = db.Column(db.String(1000))
+    read_limit = db.Column(db.Integer)
     def __repr__(self):
         return '<del_article %r>' % self.title
 

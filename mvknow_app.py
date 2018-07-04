@@ -1,44 +1,11 @@
+import os,hashlib
 from flask import render_template,request,url_for,send_from_directory,redirect
-from flask_wtf import FlaskForm
-from wtforms import StringField,TextAreaField,SubmitField,PasswordField
-from wtforms.validators import DataRequired,Email
+from flask_login import login_required,login_user,logout_user
 from MySQL_Modules import article,del_article,user
 from mvknow_init import db,app,ckeditor,login_manager
 from mvknow_contact_mail import send_mail
-from flask_ckeditor import  CKEditorField
-from flask_login import login_required,login_user,logout_user
-import time,os,hashlib
-
-def GetNowTime():
-    return time.strftime("%Y-%m-%d",time.localtime(time.time()))
-
-def GetIDList(page,perpage):
-    Article_list = article.query.order_by(article.id.desc())
-    IDList=[]
-    for i in Article_list:
-        IDList.append(i.id)
-    return IDList[perpage*page-perpage:perpage*page]
-class mail_form(FlaskForm):
-    subject=StringField('subject',validators=[DataRequired()])
-    message=TextAreaField('message',validators=[DataRequired()])
-    submit=SubmitField('Submit')
-
-class PostForm(FlaskForm):
-	title = StringField('Title',validators=[DataRequired()])
-	abstract = StringField('abstract',validators=[DataRequired()])
-	body = CKEditorField('Body', validators=[DataRequired()])
-	submit = SubmitField('提交')
-
-class LoginForm(FlaskForm):
-	username = StringField('用户名',validators=[DataRequired('请输入用户名')])
-	password = PasswordField('密码',validators=[DataRequired('请输入密码')])
-	submit = SubmitField('登陆')
-
-class AdminInfoForm(FlaskForm):
-    username = StringField('用户名',validators=[DataRequired('请输入用户名')])
-    password = PasswordField('密码',validators=[DataRequired('请输入密码')])
-    mail=StringField('邮箱',validators=[DataRequired('请输入邮箱地址'),Email('邮箱地址不正确')])
-    submit = SubmitField('录入信息')
+from mvknow_form import PostForm,LoginForm,AdminInfoForm
+from mvknow_func import GetNowTime,GetIDList
 
 @app.route('/',methods=['GET'])
 def Home():
@@ -105,7 +72,8 @@ def newarticle():
         title = form.title.data
         body = form.body.data
         abstract=form.abstract.data
-        new_article=article(title=title,body=body,created_date=GetNowTime(),author='IT',read_num=0,abstract=abstract)
+        read_limit=form.read_limit.data
+        new_article=article(title=title,body=body,created_date=GetNowTime(),author='IT',read_num=0,abstract=abstract,read_limit=read_limit)
         db.session.add(new_article)
         db.session.commit()
         return render_template('post.html',title=title,body=body)
@@ -125,11 +93,13 @@ def edit(art_number):
         Article_content.title=form.title.data
         Article_content.abstract=form.abstract.data
         Article_content.body=form.body.data
+        Article_content.read_limit = form.read_limit.data
         db.session.commit()
         return render_template('post.html',title=form.title.data,body=form.body.data)
     form.title.data=Article_content.title
     form.abstract.data=Article_content.abstract
     form.body.data=Article_content.body
+    form.read_limit.data=Article_content.read_limit
     return render_template('editor.html',form=form)
 
 @app.route('/manage', methods=['GET', 'POST'])
@@ -147,7 +117,7 @@ def move_article(art_number):
     if Del_article is None:
         del_article_row = del_article(id=Article.id, title=Article.title, body=Article.body,
                                       created_date=Article.created_date, author=Article.author,
-                                      read_num=Article.read_num, abstract=Article.abstract)
+                                      read_num=Article.read_num, abstract=Article.abstract,read_limit=Article.read_limit)
         db.session.add(del_article_row)
         db.session.delete(Article)
         db.session.commit()
@@ -163,7 +133,7 @@ def online_article(art_number):
     if Article is None:
         article_row = article(id=Del_article.id, title=Del_article.title, body=Del_article.body,
                                       created_date=Del_article.created_date, author=Del_article.author,
-                                      read_num=Del_article.read_num, abstract=Del_article.abstract)
+                                      read_num=0, abstract=Del_article.abstract,read_limit=Del_article.read_limit)
         db.session.add(article_row)
         db.session.delete(Del_article)
         db.session.commit()
