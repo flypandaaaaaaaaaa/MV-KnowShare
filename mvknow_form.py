@@ -7,6 +7,7 @@ class PostForm(FlaskForm):
     title = StringField('Title',validators=[DataRequired()])
     abstract = StringField('abstract',validators=[DataRequired()])
     read_limit = StringField('limit')
+    read_public = StringField('read_public')
     body = CKEditorField('Body', validators=[DataRequired()])
     submit = SubmitField('提交')
 

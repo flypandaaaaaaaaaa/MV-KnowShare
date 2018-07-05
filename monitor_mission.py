@@ -13,7 +13,7 @@ while True:
             elif i.read_num >= i.read_limit:
                 del_article_row = del_article(id=i.id, title=i.title, body=i.body,
                                               created_date=i.created_date, author=i.author,
-                                              read_num=i.read_num, abstract=i.abstract,read_limit=i.read_limit)
+                                              read_num=i.read_num, abstract=i.abstract,read_limit=i.read_limit,read_public=i.read_public)
                 db.session.add(del_article_row)
                 db.session.delete(i)
                 db.session.commit()

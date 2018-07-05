@@ -6,21 +6,24 @@ from mvknow_init import db,app,ckeditor,login_manager
 from mvknow_contact_mail import send_mail
 from mvknow_form import PostForm,LoginForm,AdminInfoForm
 from mvknow_func import GetNowTime,GetIDList
+from Get_article_list import Get_article
 
 @app.route('/',methods=['GET'])
 def Home():
     FirstPageID=GetIDList(1,7)
-    Article_list = article.query.filter(article.id.in_ (FirstPageID)).order_by(article.id.desc())
-    Article_list_recent = article.query.order_by(article.created_date.desc()).limit(5).offset(0)
-    Article_list_most = article.query.order_by(article.read_num.desc()).limit(5).offset(0)
+    get_article=Get_article(FirstPageID,5)
+    Article_list = get_article.Get_article_page_list_desc_id()
+    Article_list_recent = get_article.Get_article_list_recent_desc()
+    Article_list_most = get_article.Get_article_list_most_desc()
     return render_template('index.html',Article_list=Article_list,Article_list_recent=Article_list_recent,Article_list_most=Article_list_most,lastpage='#',nextpage='2')
 
 @app.route('/page/<page>',methods=['GET'])
 def page(page):
     PageID = GetIDList(int(page),7)
-    Article_list = article.query.filter(article.id.in_(PageID)).order_by(article.id.desc())
-    Article_list_recent = article.query.order_by(article.created_date.desc()).limit(5).offset(0)
-    Article_list_most = article.query.order_by(article.read_num.desc()).limit(5).offset(0)
+    get_article=Get_article(PageID,5)
+    Article_list = get_article.Get_article_page_list_desc_id()
+    Article_list_recent = get_article.Get_article_list_recent_desc()
+    Article_list_most = get_article.Get_article_list_most_desc()
     if int(page) <= 1:
         lastpage='#'
         nextpage=2
@@ -32,13 +35,15 @@ def page(page):
 @app.route('/readall',methods=['GET'])
 def readall():
     PageID = GetIDList(1,5)
-    Article_list = article.query.filter(article.id.in_(PageID)).order_by(article.id.desc())
+    get_article=Get_article(PageID,5)
+    Article_list = get_article.Get_article_page_list_desc_id()
     return render_template('full-width.html',Article_list=Article_list,lastpage='#',nextpage='2')
 
 @app.route('/readallpage/<page>',methods=['GET'])
 def readallpage(page):
     PageID = GetIDList(int(page),5)
-    Article_list = article.query.filter(article.id.in_(PageID)).order_by(article.id.desc())
+    get_article=Get_article(PageID,5)
+    Article_list = get_article.Get_article_page_list_desc_id()
     if int(page) <= 1:
         lastpage='#'
         nextpage=2
@@ -73,7 +78,8 @@ def newarticle():
         body = form.body.data
         abstract=form.abstract.data
         read_limit=form.read_limit.data
-        new_article=article(title=title,body=body,created_date=GetNowTime(),author='IT',read_num=0,abstract=abstract,read_limit=read_limit)
+        read_public=form.read_public.data
+        new_article=article(title=title,body=body,created_date=GetNowTime(),author='IT',read_num=0,abstract=abstract,read_limit=read_limit,read_public=read_public)
         db.session.add(new_article)
         db.session.commit()
         return render_template('post.html',title=title,body=body)
@@ -94,12 +100,14 @@ def edit(art_number):
         Article_content.abstract=form.abstract.data
         Article_content.body=form.body.data
         Article_content.read_limit = form.read_limit.data
+        Article_content.read_public=form.read_public.data
         db.session.commit()
         return render_template('post.html',title=form.title.data,body=form.body.data)
     form.title.data=Article_content.title
     form.abstract.data=Article_content.abstract
     form.body.data=Article_content.body
     form.read_limit.data=Article_content.read_limit
+    form.read_public.data=Article_content.read_public
     return render_template('editor.html',form=form)
 
 @app.route('/manage', methods=['GET', 'POST'])
@@ -117,7 +125,7 @@ def move_article(art_number):
     if Del_article is None:
         del_article_row = del_article(id=Article.id, title=Article.title, body=Article.body,
                                       created_date=Article.created_date, author=Article.author,
-                                      read_num=Article.read_num, abstract=Article.abstract,read_limit=Article.read_limit)
+                                      read_num=Article.read_num, abstract=Article.abstract,read_limit=Article.read_limit,read_public=Article.read_public)
         db.session.add(del_article_row)
         db.session.delete(Article)
         db.session.commit()
@@ -133,7 +141,7 @@ def online_article(art_number):
     if Article is None:
         article_row = article(id=Del_article.id, title=Del_article.title, body=Del_article.body,
                                       created_date=Del_article.created_date, author=Del_article.author,
-                                      read_num=0, abstract=Del_article.abstract,read_limit=Del_article.read_limit)
+                                      read_num=0, abstract=Del_article.abstract,read_limit=Del_article.read_limit,read_public=Del_article.read_public)
         db.session.add(article_row)
         db.session.delete(Del_article)
         db.session.commit()
