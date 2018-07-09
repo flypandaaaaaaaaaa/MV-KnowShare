@@ -5,7 +5,7 @@ class article(db.Model):
     __tablename__='article'
     id=db.Column(db.Integer,primary_key=True)
     title=db.Column(db.String(100))
-    body=db.Column(db.String(10000))
+    body=db.Column(db.String(19000))
     created_date=db.Column(db.Date)
     author=db.Column(db.String(100))
     read_num=db.Column(db.Integer)
@@ -19,7 +19,7 @@ class del_article(db.Model):
     __tablename__ = 'del_article'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(100))
-    body = db.Column(db.String(10000))
+    body=db.Column(db.String(19000))
     created_date = db.Column(db.Date)
     author = db.Column(db.String(100))
     read_num = db.Column(db.Integer)
