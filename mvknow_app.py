@@ -7,8 +7,8 @@ from mvknow_contact_mail import send_mail
 from mvknow_form import PostForm,LoginForm,AdminInfoForm
 from mvknow_func import GetNowTime,GetIDList
 from Get_article_list import Get_article
-from move_article import move_article
-
+from move_article import mv_article
+from read_article import  read_my_article
 @app.route('/',methods=['GET'])
 def Home():
     FirstPageID=GetIDList(1,7)
@@ -55,9 +55,7 @@ def readallpage(page):
 
 @app.route('/readall/<art_number>',methods=['GET'])
 def readone(art_number):
-    Article= article.query.filter_by(id=art_number).first()
-    Article.read_num=Article.read_num+1
-    db.session.commit()
+    Article= read_my_article(art_number).read()
     return render_template('single.html', Article=Article)
 
 @app.route('/about',methods=['GET'])
@@ -114,20 +112,20 @@ def edit(art_number):
 @app.route('/manage', methods=['GET', 'POST'])
 @login_required
 def manage():
-    Article_list = article.query.order_by(article.created_date.desc())
-    del_Article_list = del_article.query.order_by(del_article.created_date.desc())
+    Article_list = Get_article().Get_all_article_desc_date()
+    del_Article_list = Get_article().Get_all_del_article_desc_date()
     return render_template('manage.html',Article_list=Article_list,del_Article_list=del_Article_list)
 
 @app.route('/del/<art_number>', methods=['GET', 'POST'])
 @login_required
 def move_article(art_number):
-    move_article(art_number).offline_article()
+    mv_article(art_number).offline_article()
     return redirect(url_for('manage'))
 
 @app.route('/online/<art_number>', methods=['GET', 'POST'])
 @login_required
 def online_article(art_number):
-    move_article(art_number).online_article()
+    mv_article(art_number).online_article()
     return redirect(url_for('manage'))
 
 @app.route('/files/<filename>')

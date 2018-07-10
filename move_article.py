@@ -2,12 +2,13 @@ from MySQL_Modules import article,del_article
 from mvknow_init import db
 
 
-class move_article(object):
+class mv_article(object):
     """
     online-offiline the article
     """
     def __init__(self,article_id):
         self.article_id=article_id
+
     def offline_article(self):
         Article=article.query.filter_by(id=self.article_id).first()
         Del_article = del_article.query.filter_by(id=self.article_id).first()
