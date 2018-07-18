@@ -88,12 +88,13 @@ def newarticle():
 @login_required
 def edit(art_number):
     form=PostForm()
-    Article= article.query.filter_by(id=art_number).first()
-    Del_Article = del_article.query.filter_by(id=art_number).first()
-    if Article is None:
-        Article_content=Del_Article
-    else:
-        Article_content=Article
+    # Article= article.query.filter_by(id=art_number).first()
+    # Del_Article = del_article.query.filter_by(id=art_number).first()
+    # if Article is None:
+    #     Article_content=Del_Article
+    # else:
+    #     Article_content=Article
+    Article_content=read_my_article(art_number).read()
     if form.validate_on_submit():
         Article_content.title=form.title.data
         Article_content.abstract=form.abstract.data

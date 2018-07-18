@@ -10,7 +10,7 @@ while True:
     for i in Article_list:
         if i.read_limit is None:
             print("无阅读次数限制",GetNowTime(),i.title)
-        elif i.read_num >= i.read_limit:
+        elif int(i.read_num) >= int(i.read_limit):
             mv_article(i.id).offline_article()
             print('文章到达阅读次数限制，下线成功',GetNowTime(),i.title)
         else:
